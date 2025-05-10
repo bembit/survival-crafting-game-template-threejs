@@ -1,0 +1,1228 @@
+/* style.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overflow: hidden; /* Prevent scrollbars */
+  width: 100%;
+  height: 100%;
+  font-family: sans-serif;
+  background-color: black;
+}
+
+#canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute; /*  Behind UI */
+  top: 0;
+  left: 0;
+  z-index: 1; /* Behind UI */
+  background-color: black;
+}
+
+#canvas:hover {
+  cursor: pointer;
+}
+
+/* UI Styling */
+#ui-container {
+  position: fixed; /* Position relative to viewport */
+  bottom: 10px;
+  left: 10px;
+  z-index: 10; /* Ensure UI is on top of canvas */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none; /* Allow clicks to pass through container by default */
+}
+
+#controls {
+  pointer-events: auto; /* Enable pointer events for buttons */
+  display: flex;
+}
+
+#controls button {
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  flex-direction: column-reverse;
+}
+
+#controls button:hover {
+  background-color: rgba(50, 50, 50, 0.8);
+}
+
+#controls button:hover {
+  background-color: rgba(50, 50, 50, 0.8);
+}
+
+#controls button img {
+  width: 25px;
+  height: 25px;
+  margin-bottom: 5px;
+}
+
+#debug-log-area {
+  width: 375px;
+  height: 650px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #ccc;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 5px;
+  font-size: 11px;
+  font-family: monospace;
+  overflow-y: scroll; /* Add scrollbar if content overflows */
+  pointer-events: auto; /* Enable scrolling/selection if needed */
+  resize: both;
+}
+
+#debug-log-area p {
+  margin-bottom: 3px;
+  border-bottom: 1px solid #333; /* Separator line */
+  padding-bottom: 2px;
+}
+
+#debug-log-area p:first-child {
+  font-weight: bold;
+  color: white;
+}
+
+/* Style for the target health bar */
+.health-bar-container {
+  position: fixed; /* Position relative to viewport */
+  bottom: 25%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 25px;
+  background-color: rgba(50, 50, 50, 0.8);
+  border: 1px solid #888;
+  border-radius: 5px;
+  padding: 2px;
+  z-index: 20; /* Ensure it's above other UI */
+  box-sizing: border-box;
+  text-align: center;
+  pointer-events: none; /* Allow clicks through */
+}
+
+.health-bar-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 3px;
+  font-size: 12px;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  z-index: 2; /* Above fill */
+  line-height: 16px; /* Match fill height */
+}
+
+.health-bar-fill {
+  height: 100%;
+  width: 100%; /* Start full */
+  background-color: #b33; /* Red for health */
+  border-radius: 3px;
+  transition: width 0.1s linear; /* Smooth width changes */
+  z-index: 1; /* Below label */
+}
+
+#interaction-prompt {
+  position: fixed;
+  bottom: 32%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: sans-serif;
+  text-align: center;
+  z-index: 10; /* Ensure visibility */
+  pointer-events: none; /* Don't block clicks */
+  /* Add transition for smoother appearance/disappearance */
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Style for when it should be hidden (set via JS) */
+#interaction-prompt.hidden {
+  opacity: 0;
+}
+
+#action-bar {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  background-color: rgba(10, 10, 10, 0.7);
+  border: 1px solid #555;
+  border-radius: 3px;
+  z-index: 15;
+}
+
+.action-slot {
+  width: 45px;
+  height: 45px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ccc;
+  position: relative; /* For cooldown overlay */
+  overflow: hidden; /* Hide cooldown overflow */
+  box-sizing: border-box;
+  z-index: 15;
+}
+
+.action-slot .ability-icon:hover {
+  cursor: help;
+}
+
+.hotkey-number {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 10px;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+}
+
+.action-slot .ability-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* Prevent icon blocking slot interactions */
+}
+
+.action-slot .ability-icon img,
+.action-slot .ability-icon svg {
+  display: block;
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain; /* Ensure aspect ratio is maintained */
+  /* fill: #cccccc; */
+  pointer-events: none; /* Prevent icon blocking slot interactions */
+}
+
+/* Style for the small keybind number */
+.action-slot::after {
+  content: attr(data-slot-index) + 1; /* Display slot number (1-based) */
+  position: absolute;
+  bottom: 2px;
+  left: 3px;
+  font-size: 10px;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+}
+
+/* Cooldown Overlay styling */
+.action-slot .cooldown-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  transition: height 0.1s linear; /* Animate height for cooldown progress */
+  pointer-events: none; /* Allow clicks through */
+}
+.action-slot.ready .cooldown-overlay {
+  height: 0; /* Hide overlay when ready */
+}
+
+.chat-bubble {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 100px;
+  max-width: 250px;
+  padding: 10px 15px;
+  background-color: rgba(200, 200, 220, 0.85);
+  color: #1a1a1a;
+  border: 1px solid #aaa;
+  border-radius: 15px;
+  font-size: 13px;
+  font-family: sans-serif;
+  text-align: center;
+  z-index: 25; /* High z-index */
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Style for when hidden */
+.chat-bubble.hidden {
+  opacity: 0;
+}
+
+.chat-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid rgba(200, 200, 220, 0.85); /* Match bubble background */
+  /* Add border matching if the bubble has a border, or shadow */
+  /* filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.2)); */
+}
+
+#game-clock {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 16px;
+  z-index: 10; /* Ensure visibility */
+  pointer-events: none; /* Don't block clicks */
+}
+
+#game-clock-controls {
+  pointer-events: auto; /* Enable pointer events for buttons */
+  position: fixed;
+  top: 55px;
+  right: 10px;
+}
+
+#game-clock-controls button {
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#main-menu {
+  z-index: 100000;
+}
+
+#main-menu button {
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#main-menu:hover {
+  cursor: crosshair;
+}
+
+#xp-bar-container {
+  position: fixed;
+  bottom: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 20px;
+  background-color: rgba(10, 10, 10, 0.7);
+  border: 1px solid #555;
+  border-radius: 5px;
+  z-index: 10;
+  pointer-events: none; /* Don't block clicks */
+  display: flex;
+  align-items: center;
+  padding: 2px 5px;
+  box-sizing: border-box;
+}
+
+#xp-bar-level {
+  color: yellow;
+  font-weight: bold;
+  font-size: 11px;
+  margin-right: 5px;
+  white-space: nowrap;
+}
+
+#xp-bar-background {
+  flex-grow: 1; /* Allow background bar to take remaining space */
+  height: 100%;
+  background-color: rgba(80, 80, 80, 0.7); /* Background of the bar itself */
+  border-radius: 3px;
+  overflow: hidden; /* Clip the fill div */
+  position: relative; /* For positioning text inside */
+}
+
+#xp-bar-fill {
+  height: 100%;
+  width: 0%; /* Start empty */
+  background-color: #a0a0ff;
+  border-radius: 3px;
+  transition: width 0.2s ease-out; /* Fill animation */
+}
+
+#xp-bar-text {
+  position: absolute; /* Position text over the bar background */
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+#weather-bar {
+  position: fixed;
+  bottom: 10px;
+  left: 65%;
+  background-color: rgba(10, 10, 10, 0.7);
+  border: 1px solid #555;
+  border-radius: 5px;
+  z-index: 10; /* Ensure visibility */
+  pointer-events: none; /* Hide */
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  color: white;
+  gap: 5px;
+  font-size: 14px;
+}
+
+#weather-bar h4 {
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#weather-bar div {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  background-color: rgba(80, 80, 80, 0.7);
+  border-radius: 3px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#weather-bar div span {
+  position: absolute;
+  display: inline-block;
+  right: 0;
+  bottom: 0;
+  font-size: 14px;
+  text-shadow: 1px 1px 1px black;
+  white-space: nowrap;
+}
+
+#player-info {
+  position: fixed;
+  bottom: 105px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15; /* Ensure it's above most elements */
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none; /* Allow clicks through */
+}
+
+#player-health-bar-container {
+  width: 250px;
+  height: 22px;
+  background-color: rgba(50, 50, 50, 0.8);
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 2px;
+  box-sizing: border-box;
+  position: relative; /* Needed for text overlay */
+}
+
+#player-health-bar-fill {
+  height: 100%;
+  width: 100%; /* Start full */
+  background-color: #b33;
+  border-radius: 2px;
+  transition: width 0.15s linear; /* Smooth width changes */
+  z-index: 1; /* Below text */
+}
+
+#player-health-bar-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  z-index: 2; /* Above fill */
+  pointer-events: none; /* Prevent text blocking clicks */
+}
+
+#game-clock {
+  top: 10px;
+  right: 10px;
+}
+
+#game-over-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0); /* Start transparent */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100; /* High z-index, above other UI */
+  opacity: 0;
+  transition: background-color 1.5s ease-in-out, opacity 1.5s ease-in-out; /* Fade effect */
+  pointer-events: none; /* Start non-interactive */
+}
+
+#game-over-overlay.visible {
+  background-color: rgba(0, 0, 0, 0.9); /* Fade to dark */
+  opacity: 1;
+  pointer-events: auto; /* Make interactive when visible */
+}
+
+#game-over-content {
+  color: #ccc;
+  text-align: center;
+  background-color: rgba(20, 20, 20, 0.7);
+  padding: 40px;
+  border-radius: 10px;
+  border: 1px solid #444;
+}
+
+#game-over-content h1 {
+  color: #ff4444;
+  margin-bottom: 15px;
+  font-size: 2.5em;
+}
+
+#game-over-content p {
+  font-size: 1.2em;
+  margin-bottom: 30px;
+}
+
+#game-over-buttons button {
+  padding: 12px 25px;
+  background-color: rgba(50, 50, 50, 0.8);
+  color: white;
+  border: 1px solid #777;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1em;
+  margin: 0 10px;
+  transition: background-color 0.2s;
+}
+
+#game-over-buttons button:hover {
+  background-color: rgba(80, 80, 80, 0.9);
+}
+
+.hidden {
+  display: none;
+}
+
+/* inventory and crafting panel */
+#inventory-and-crafting-container {
+  position: fixed;
+  max-width: 500px;
+  bottom: 7.5%;
+  right: 2.5%;
+  z-index: 15; /* Above other UI elements except maybe modals */
+  padding-bottom: 10px;
+}
+
+:root {
+  --inventory-width: 300px;
+}
+
+#inventory-panel {
+  height: auto;
+  background-color: rgba(30, 30, 30, 0.85);
+  border: 1px solid #666;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 15; /* Above other UI elements except maybe modals */
+  display: grid;
+  grid-template-columns: repeat(5, calc(var(--inventory-width) / 5));
+  gap: 8px;
+  pointer-events: auto; /* Allow interaction if needed later */
+  margin-top: 10px;
+}
+
+.inventory-slot {
+  width: calc(var(--inventory-width) / 5); /* Adjust width based on grid */
+  height: calc(var(--inventory-width) / 5); /* Adjust height based on grid */
+  background-color: rgba(80, 80, 80, 0.7);
+  border: 1px solid #444;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: white;
+  position: relative; /* Needed for absolute positioning of quantity */
+  overflow: hidden; /* Hide overflow */
+  box-sizing: border-box;
+}
+
+.inventory-slot .item-icon {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none; /* Prevent image intercepting clicks meant for buttons */
+  margin-bottom: 3px; /* Space below icon if quantity is shown */
+}
+
+.inventory-slot .item-quantity {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: 1px 1px 1px black;
+}
+
+.inventory-slot.empty {
+  background-color: rgba(60, 60, 60, 0.7);
+}
+
+.inventory-slot .item-button {
+  font-size: 16px;
+  padding: 1px 2px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid #666;
+  border-radius: 2px;
+  cursor: pointer;
+  line-height: 1;
+}
+.inventory-slot .item-button:hover {
+  background-color: rgba(50, 50, 50, 0.8);
+}
+.inventory-slot .item-button:disabled {
+  cursor: not-allowed;
+  color: #888;
+}
+
+#inventory-weight {
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-top: 1px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  border-radius: 5px;
+}
+
+#crafting-menu {
+  background-color: rgba(40, 40, 40, 0.85);
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 10px;
+  color: white;
+  width: 100%;
+  height: fit-content; /* Adjust height based on content */
+  z-index: 1600; /* Ensure visibility */
+  pointer-events: auto;
+}
+
+#crafting-menu h3 {
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+#crafting-recipes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#crafting-recipes li {
+  display: flex;
+  flex-direction: row-reverse;
+  margin-bottom: 5px;
+}
+#crafting-recipes li img {
+  width: 25px;
+  height: 25px;
+}
+
+#crafting-recipes button {
+  width: 100%;
+  padding: 5px;
+  font-size: 14px;
+  background-color: rgba(80, 80, 80, 0.7);
+  color: white;
+  border: 1px solid #444;
+  border-radius: 3px;
+  cursor: pointer;
+  text-align: left;
+}
+
+#crafting-recipes button:hover:not(:disabled) {
+  background-color: rgba(100, 100, 100, 0.8);
+}
+
+#crafting-recipes button:disabled {
+  color: #777;
+  background-color: rgba(60, 60, 60, 0.7);
+  cursor: not-allowed;
+}
+
+/* Shared panel style */
+.panel {
+  background-color: rgba(30, 30, 30, 0.85);
+  border: 2px solid #666;
+  border-radius: 8px;
+  padding: 10px;
+  color: white;
+  z-index: 15;
+  position: fixed;
+  bottom: 7.5%;
+  right: calc(350px + 2.5%);
+}
+
+:root {
+  --character-sheet-width: 300px;
+}
+
+#character-sheet {
+  height: fit-content;
+  margin-right: 10px;
+  border: 1px solid #444;
+}
+
+#character-sheet h3 {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+.equip-slot {
+  width: 70px;
+  height: 70px;
+  background-color: rgba(60, 60, 60, 0.7);
+  border: 1px solid #444;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #aaa;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.equip-slot:not(.empty) {
+  background-color: rgba(80, 80, 80, 0.7);
+  color: white;
+  justify-content: flex-start;
+  padding-top: 5px;
+}
+
+.equip-slot .item-icon {
+  width: 100%;
+  height: 80%;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.equip-slot .item-icon img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.equip-slot .item-button {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85%;
+}
+
+.equip-slot.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #aaa;
+}
+
+.equip-slot .item-icon.weapon {
+  color: #ffaaaa;
+}
+
+.equip-slot .item-icon.head {
+  color: #aaaaff;
+}
+
+.equip-slot .item-icon.offhand {
+  color: #aaffaa;
+}
+
+.equip-slot .item-button {
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  font-size: 14px;
+  padding: 1px 2px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid #666;
+  border-radius: 2px;
+  cursor: pointer;
+  line-height: 1;
+  pointer-events: auto;
+}
+
+.equip-slot .item-button:hover {
+  background-color: rgba(50, 50, 50, 0.8);
+}
+
+#skill-tree-container {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  background-color: rgba(20, 20, 20, 0.5);
+  border: 1px solid #444;
+  border-radius: 5px;
+  margin-top: 10px;
+  overflow: auto;
+}
+
+#skill-points-display {
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: yellow;
+}
+
+.skill-node {
+  position: absolute;
+  width: 80px;
+  height: 85px;
+  border: 1px solid #666;
+  border-radius: 6px;
+  background-color: rgba(60, 60, 60, 0.8);
+  padding: 5px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: border-color 0.2s ease-out, background-color 0.2s ease-out,
+    transform 0.1s ease-out;
+  cursor: help;
+  overflow: hidden;
+}
+
+.skill-node img {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.skill-node .skill-name {
+  font-size: 11px;
+  font-weight: bold;
+  color: #eee;
+  margin-bottom: 2px;
+  line-height: 1.1;
+  pointer-events: none;
+}
+
+.skill-node .skill-rank {
+  font-size: 10px;
+  color: #aaa;
+  pointer-events: none;
+}
+
+/* --- Node States --- */
+/* Skill is available to unlock or upgrade */
+.skill-node.available {
+  border-color: #00ff00; /* Green border */
+  background-color: rgba(60, 80, 60, 0.8);
+  cursor: pointer; /* Indicates clickable */
+}
+.skill-node.available:hover {
+  transform: scale(1.05); /* Slight zoom on hover */
+  background-color: rgba(70, 95, 70, 0.9);
+}
+
+/* Skill is learned but not max rank */
+.skill-node.learned {
+  border-color: #ffd700; /* Gold border for learned */
+  background-color: rgba(80, 80, 60, 0.8);
+}
+/* Allow upgrading learned skills if also available */
+.skill-node.learned.available {
+  border-color: #90ee90; /* Light green for upgradable learned skill */
+  background-color: rgba(70, 95, 70, 0.8);
+  cursor: pointer;
+}
+.skill-node.learned.available:hover {
+  transform: scale(1.05);
+  background-color: rgba(80, 110, 80, 0.9);
+}
+
+/* Skill is at maximum rank */
+.skill-node.maxed {
+  border-color: #888; /* Grey border */
+  background-color: rgba(70, 70, 70, 0.8);
+  cursor: help; /* Not clickable for upgrade */
+  opacity: 0.8;
+}
+.skill-node.maxed .skill-rank {
+  color: #00ff00; /* Green rank text when maxed */
+}
+
+/* Skill cannot be learned yet (level/prereq/points) */
+.skill-node.locked {
+  border-color: #444;
+  background-color: rgba(40, 40, 40, 0.8);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Hide rank text if not learned at all */
+.skill-node.locked:not(.learned) .skill-rank {
+  display: none;
+}
+
+#character-stats-display p {
+  margin: 3px 0;
+  color: #ddd;
+}
+
+.controls-button {
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  pointer-events: auto;
+}
+.controls-button:hover {
+  background-color: rgba(50, 50, 50, 0.8);
+}
+
+/* FPS Counter Styling */
+#fps-counter {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #00ff00;
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 14px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+#game-clock {
+  top: 10px;
+  right: 10px;
+  left: auto;
+}
+
+/* Player Coordinates Styling */
+#player-coordinates {
+  position: fixed;
+  top: 35px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ffff00;
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 14px;
+  z-index: 100;
+  pointer-events: none; /* Allow clicks to pass through */
+}
+
+#fps-counter {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+}
+
+/* Custom Tooltip Style */
+.custom-tooltip {
+  position: fixed;
+  display: none;
+  background-color: rgba(20, 20, 20, 0.9);
+  color: #eee;
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-family: sans-serif;
+  max-width: 250px;
+  white-space: pre-wrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  line-height: 1.4;
+}
+
+#start-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  font-family: sans-serif;
+  text-align: center;
+  /* Initially hidden, shown by JS */
+  /* visibility: hidden; */
+  /* opacity: 0; */
+  /* transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out; */
+}
+
+.start-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+#start-screen h1 {
+  margin-bottom: 30px;
+}
+
+.settings-group {
+  margin-bottom: 20px;
+}
+
+.settings-group label {
+  margin-right: 10px;
+}
+
+.settings-group select {
+  padding: 5px;
+  min-width: 100px;
+}
+
+.settings-group .tooltip {
+  display: block;
+  font-size: 16px;
+  color: #ccc;
+  margin-top: 15px;
+  text-align: left;
+}
+
+#start-game-button {
+  padding: 12px 25px;
+  font-size: 20px;
+  cursor: pointer;
+  background-color: #292929;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+#start-game-button:hover {
+  background-color: #4583a0;
+}
+
+#start-screen.hidden {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Credits Button Styling */
+#credits-button {
+  position: fixed; /* Position relative to viewport */
+  bottom: 10px;
+  right: 10px;
+  z-index: 50;
+  padding: 8px 16px;
+  font-size: 14px;
+  pointer-events: auto;
+}
+
+/* Credits Panel Styling */
+#credits-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 550px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 20px;
+  padding-top: 35px;
+  background-color: rgba(20, 20, 25, 0.92);
+  border: 1px solid #777;
+  z-index: 150;
+  color: #ddd;
+  font-size: 13px;
+  line-height: 1.5;
+  /* Uses .panel common styles for border-radius if defined */
+  /* Add transition for smooth show/hide */
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  pointer-events: auto;
+}
+
+/* Style for hiding the panel */
+#credits-panel.hidden {
+  opacity: 0;
+  transform: translate(-50%, -45%);
+  pointer-events: none; /* Prevent interaction when hidden */
+}
+
+/* Credits Panel Content Styling */
+#credits-panel h3 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: white;
+  font-size: 1.3em;
+}
+
+#credits-panel h4 {
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: #aaa;
+  border-bottom: 1px solid #444;
+  padding-bottom: 3px;
+}
+#credits-panel h5 {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  color: #bbb;
+}
+
+#credits-panel ul {
+  list-style: none;
+  padding-left: 10px;
+}
+
+#credits-panel li {
+  margin-bottom: 4px;
+}
+
+#credits-panel a {
+  color: #8af;
+  text-decoration: none;
+}
+
+#credits-panel a:hover {
+  text-decoration: underline;
+}
+
+/* Close Button Styling */
+#credits-close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #555;
+  color: white;
+  border: 1px solid #888;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  line-height: 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+}
+#credits-close-button:hover {
+  background: #777;
+}
+
+.hidden {
+  display: none;
+}

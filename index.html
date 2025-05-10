@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Short Bright - ThreeJS Survival Game Template</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <div id="start-screen">
+      <div class="start-container">
+        <h1>New Game / Load Game</h1>
+        <h1>Select Visuals</h1>
+        <div class="settings-group">
+          <label for="setting-detail">Overall Level of Detail:</label>
+          <select id="setting-detail">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="ultra_low" selected>Ultra_tmp</option>
+            <!-- <option value="ultra">Ultra</option> -->
+            <option value="brick">Brick</option>
+          </select>
+          <span class="tooltip">
+            Adjusts enemy AI activation distances, shadow rendering, and visual
+            object counts (trees, rocks, etc.).
+          </span>
+          <span class="tooltip">
+            These settings are just for testing, implemented last minute.
+            Values, assets will be adjusted ( eg. low turns off grass but adds
+            more trees.. )
+          </span>
+          <span class="tooltip">
+            <b>LOW</b> - Terrain testing. Asset/Model count reduced to 50%. Low
+            quality shadows, AI spawners are reduced to close range. Does 60 fps
+            on a 2020 MacBook Air as a test.
+          </span>
+          <span class="tooltip">
+            <b>MEDIUM</b> Asset/Model count reduced to 75%. Medium quality
+            shadows, AI spawners are reduced to medium range.
+          </span>
+          <span class="tooltip">
+            <b>HIGH</b> 100%, current values. Preferred dev setting checking
+            performance, scene.
+          </span>
+          <span class="tooltip">
+            <b>ULTRA_tmp</b> Testing values with higher asset count, the visual
+            end goal.
+          </span>
+          <!-- <span class="tooltip">
+            <b>ULTRA_LOW</b> testing other values with higher asset count..
+          </span> -->
+          <!-- <span class="tooltip">
+            <b>ULTRA</b> is the model count goal for later. 300%. Shadows are high quality, AI/enemies spawn quite far from player.
+          </span> -->
+          <span class="tooltip">
+            <b>BRICK</b> is not recommended for playing. Only for testing
+            purposes. It enables all enemies at all times, calculating all their
+            states a frame.
+          </span>
+          <span class="tooltip">
+            Got a few hundred lines of things I need to fix. AI spawns and
+            behavior LOD not implemented yet, very expensive calculations
+            running freely on every frame. Same as day night cycle.
+          </span>
+        </div>
+        <button id="start-game-button">Start / Continue</button>
+      </div>
+    </div>
+
+    <div id="game-over-overlay" class="hidden" style="display: none">
+      <div id="game-over-content">
+        <h1>Insert Coin</h1>
+        <p>You have died.</p>
+        <div id="game-over-buttons">
+          <button id="new-game-button-gameover">New Game</button>
+          <button id="load-game-button-gameover">Load Game</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ui-container">
+      <div id="debug-log-area">
+        <p>Debug Log:</p>
+      </div>
+
+      <div id="controls">
+        <button id="hide-chat-button">
+          Hide Chat
+          <img src="/icons/chat-bubble.svg" alt="Hide Chat" />
+        </button>
+
+        <button id="debug-toggle-button">Toggle Physics Debug (P)</button>
+        <button id="unstuck-button">
+          Unstuck
+          <img src="/icons/teleport.svg" alt="Unstuck" />
+        </button>
+
+        <button id="inventory-toggle-button" title="">
+          Inventory (I)<img src="/icons/knapsack.svg" alt="Inventory" />
+        </button>
+
+        <button id="character-toggle-button" class="controls-button">
+          Character (C)
+          <img src="/icons/light-helm.svg" alt="Character" />
+        </button>
+
+        <!-- main menu -->
+        <button
+          id="new-game-button"
+          title="Start a new game, resetting progress and the world."
+        >
+          New Game
+        </button>
+        <button id="load-game-button" title="Load a previously saved game.">
+          Load Game
+        </button>
+        <button
+          id="save-game-button"
+          title="Save the game. There is one slot per game."
+        >
+          Save Game
+          <img src="/icons/save.svg" alt="Save" />
+        </button>
+      </div>
+
+      <div
+        id="target-health-bar-container"
+        class="health-bar-container"
+        style="display: none"
+      >
+        <div id="target-health-bar-label" class="health-bar-label">Target</div>
+        <div id="target-health-bar-fill" class="health-bar-fill"></div>
+      </div>
+
+      <div id="chat-bubble" class="chat-bubble" style="display: none"></div>
+
+      <div id="interaction-prompt" style="display: none"></div>
+
+      <div id="game-clock" class="hud-element">00:00</div>
+
+      <div id="game-clock-controls">
+        <button id="time-backward-button" title="Rewind Time 1 Hour">
+          &lt;&lt;&lt;
+        </button>
+        <button id="time-forward-button" title="Advance Time 1 Hour">
+          &gt;&gt;&gt;
+        </button>
+      </div>
+    </div>
+
+    <div id="player-coordinates">Coords: X:-- Y:-- Z:--</div>
+
+    <div id="action-bar">
+      <div class="action-slot" data-slot-index="0"><span>1</span></div>
+      <div class="action-slot" data-slot-index="1"><span>2</span></div>
+      <div class="action-slot" data-slot-index="2"><span>3</span></div>
+      <div class="action-slot" data-slot-index="3"><span>4</span></div>
+    </div>
+
+    <div id="weather-bar">
+      <h4>dev options</h4>
+      <div class="weather-element" data-slot-index="4"><span>5</span>Clear</div>
+      <div class="weather-element" data-slot-index="5"><span>6</span>Rain</div>
+      <div class="weather-element" data-slot-index="6"><span>7</span>Snow</div>
+      <div class="weather-element" data-slot-index="7">
+        <span>8</span>Blizzard
+      </div>
+      <div class="weather-element" data-slot-index="8">
+        <span>9</span>Freezing
+      </div>
+      <div class="weather-element" data-slot-index="9"><span>M</span>Mute</div>
+    </div>
+
+    <div id="player-info">
+      <div id="player-health-bar-container">
+        <div id="player-health-bar-fill"></div>
+        <div id="player-health-bar-text">100 / 100</div>
+      </div>
+    </div>
+
+    <div id="xp-bar-container">
+      <div id="xp-bar-level">Lvl 1</div>
+      <div id="xp-bar-background">
+        <div id="xp-bar-fill"></div>
+      </div>
+      <div id="xp-bar-text">0 / 100 XP</div>
+    </div>
+
+    <div id="character-sheet" class="panel hidden" style="pointer-events: auto">
+      <div id="skill-points-display">Skill Points: 0</div>
+      <div id="skill-tree-container"></div>
+      <h3>Equipment</h3>
+      <div class="equipment-grid">
+        <div class="equip-slot" data-slot="head">Head</div>
+        <div class="equip-slot" data-slot="chest">Chest</div>
+        <div class="equip-slot" data-slot="gloves">Gloves</div>
+        <div class="equip-slot" data-slot="bag">Bag</div>
+        <div class="equip-slot" data-slot="legs">Legs</div>
+        <div class="equip-slot" data-slot="feet">Feet</div>
+        <div class="equip-slot" data-slot="weapon">Weapon</div>
+      </div>
+      <div id="character-stats-display"></div>
+    </div>
+
+    <div id="inventory-and-crafting-container">
+      <div id="crafting-menu" style="display: none">
+        <h3>Crafting</h3>
+        <ul id="crafting-recipes"></ul>
+      </div>
+
+      <div id="inventory-panel" style="display: none">
+        <div id="inventory-weight"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+        <div class="inventory-slot"></div>
+      </div>
+    </div>
+
+    <button id="credits-button" class="controls-button">Credits</button>
+
+    <div id="credits-panel" class="panel hidden">
+      <button id="credits-close-button">X</button>
+      <h3>Credits & Attributions</h3>
+
+      <h4>Source Code</h4>
+      <p>
+        <a
+          href="https://github.com/bembit/survival-crafting-game-template-threejs"
+          target="_blank"
+          rel="noopener noreferrer"
+          >https://github.com/bembit/survival-crafting-game-template-threejs</a
+        >
+      </p>
+
+      <p>
+        <a
+          href="https://github.com/bembit/survival-crafting-game-template-threejs"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Visit repo /ATTRIBUTIONS_CERDITS.md for more.</a
+        >
+      </p>
+
+      <h4>Assets Used</h4>
+
+      <h5>Models:</h5>
+      <ul>
+        <li>
+          Catwoman Rigged:
+          <a
+            href="https://sketchfab.com/3d-models/catwoman-rigged-hatchxr-3562beab94e6432ca9a3fe645206c255"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Sketchfab (HatchXR)</a
+          >
+        </li>
+        <li>
+          Modular Women:
+          <a
+            href="https://quaternius.com/packs/ultimatemodularwomen.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Quaternius</a
+          >
+        </li>
+        <li>
+          Stylized Nature:
+          <a
+            href="https://quaternius.com/packs/stylizednaturemegakit.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Quaternius</a
+          >
+        </li>
+        <li>
+          Animated Animals:
+          <a
+            href="https://quaternius.com/packs/ultimateanimatedanimals.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Quaternius</a
+          >
+        </li>
+        <li>
+          Environment/Buildings:
+          <a
+            href="https://quaternius.com/packs/ultimatestylizednature.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Quaternius</a
+          >
+        </li>
+      </ul>
+
+      <h5>SFX / Voices:</h5>
+      <ul>
+        <li>
+          RPG Voice Starter Pack:
+          <a
+            href="https://cicifyre.itch.io/rpg-voice-starter-pack"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Cicifyre (itch.io)</a
+          >
+        </li>
+        <li>
+          Universal UI Soundpack:
+          <a
+            href="https://cyrex-studios.itch.io/universal-ui-soundpack"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Cyrex Studios (itch.io)</a
+          >
+        </li>
+      </ul>
+
+      <h5>Icons:</h5>
+      <ul>
+        <li>
+          <a
+            href="https://game-icons.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >game-icons.net</a
+          >
+          (by Delapouite and Lorc)
+        </li>
+      </ul>
+
+      <h5>More Assets:</h5>
+      <ul>
+        <li>
+          Clouds Texture:
+          <a
+            href="https://www.freepik.com/free-psd/realistic-clouds-isolated_41576353.htm"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Freepik.com</a
+          >
+        </li>
+      </ul>
+
+      <h5>Music:</h5>
+      <ul>
+        <li>
+          The Pain That Never Left: David Fesliyan (<a
+            href="https://www.fesliyanstudios.com/royalty-free-music/download/the-pain-that-never-left/2166"
+            target="_blank"
+            rel="noopener noreferrer"
+            >FesliyanStudios.com</a
+          >)
+        </li>
+        <li>
+          Serenity: David Renda (<a
+            href="https://www.fesliyanstudios.com/royalty-free-music/download/serenity/897"
+            target="_blank"
+            rel="noopener noreferrer"
+            >FesliyanStudios.com</a
+          >)
+        </li>
+      </ul>
+    </div>
+
+    <script src="/ammo.wasm.js"></script>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
